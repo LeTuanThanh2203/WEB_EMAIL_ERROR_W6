@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/ch12email">
+
+<!--    <Resource name="jdbc/murach" auth="Container"-->
+<!--              driverClassName="com.mysql.jdbc.Driver"-->
+<!--              url="jdbc:mysql://localhost:3306/murach?autoReconnect=true"-->
+<!--              username="murach_user" password="sesame"-->
+<!--              maxActive="100" maxIdle="30" maxWait="10000"-->
+<!--              logAbandoned="true" removeAbandoned="true"-->
+<!--              removeAbandonedTimeout="60" type="javax.sql.DataSource" />-->
+    <Resource
+            name="jdbc/murach"
+            auth="Container"
+            type="javax.sql.DataSource"
+
+            factory="org.apache.tomcat.dbcp.dbcp2.BasicDataSourceFactory"
+
+            maxTotal="20"
+            maxIdle="10"
+            maxWaitMillis="10000"
+
+            username="postgres"
+            password="413561"
+
+            url="jdbc:postgresql://localhost:5432/MurachSQLGateway"
+    />
+
+</Context>
