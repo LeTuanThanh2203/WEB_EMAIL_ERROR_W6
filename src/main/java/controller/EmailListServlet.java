@@ -60,35 +60,40 @@ public class EmailListServlet extends HttpServlet {
             else {
 
                 // Insert user into database
-                UserDB_1.insert(user);
+                int rowAffected = UserDB_1.insert(user);
 
-                // Send confirmation email
-                try {
+                if (rowAffected > 0) {
+                    // Send confirmation email
+                    try {
 
-                    String fromEmail = System.getenv("SENDER_EMAIL");
-                    if (fromEmail == null || fromEmail.isEmpty()) {
-                        fromEmail = "tuanthanhlvq413@gmail.com"; // Email đã verify trên Brevo Senders
+                        String fromEmail = System.getenv("SENDER_EMAIL");
+                        if (fromEmail == null || fromEmail.isEmpty()) {
+                            fromEmail = "tuanthanhlvq413@gmail.com"; // Email đã verify trên Brevo Senders
+                        }
+                        MailUtilGmail.sendMail(
+                                user.getEmail(),
+                                fromEmail,
+                                "Welcome to our Email List",
+                                "<h1>Welcome " + user.getFirstName() + "!</h1>",
+                                true
+                        );
+
+                        message = "Registration successful. "
+                                + "A confirmation email has been sent.";
+
+                    } catch (MessagingException e) {
+
+                        message = "Registration successful, "
+                                + "but the confirmation email could not be sent.";
+
+                        e.printStackTrace();
                     }
-                    MailUtilGmail.sendMail(
-                            user.getEmail(),
-                            fromEmail,
-                            "Welcome to our Email List",
-                            "<h1>Welcome " + user.getFirstName() + "!</h1>",
-                            true
-                    );
 
-                    message = "Registration successful. "
-                            + "A confirmation email has been sent.";
-
-                } catch (MessagingException e) {
-
-                    message = "Registration successful, "
-                            + "but the confirmation email could not be sent.";
-
-                    e.printStackTrace();
+                    url = "/thanks.jsp";
+                } else {
+                    message = "Error occurred while saving data. Registration failed.";
+                    url = "/index.jsp";
                 }
-
-                url = "/thanks.jsp";
             }
 
             request.setAttribute("user", user);

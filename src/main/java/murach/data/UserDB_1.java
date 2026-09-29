@@ -16,7 +16,7 @@ public class UserDB_1 {
         PreparedStatement ps = null;
 
         String query
-                = "INSERT INTO User (Email, FirstName, LastName) "
+                = "INSERT INTO \"User\" (\"Email\", \"FirstName\", \"LastName\") "
                 + "VALUES (?, ?, ?)";
         try {
             ps = connection.prepareStatement(query);
@@ -41,10 +41,10 @@ public class UserDB_1 {
         }
         PreparedStatement ps = null;
 
-        String query = "UPDATE User SET "
-                + "FirstName = ?, "
-                + "LastName = ? "
-                + "WHERE Email = ?";
+        String query = "UPDATE \"User\" SET "
+                + "\"FirstName\" = ?, "
+                + "\"LastName\" = ? "
+                + "WHERE \"Email\" = ?";
         try {
             ps = connection.prepareStatement(query);
             ps.setString(1, user.getFirstName());
@@ -69,8 +69,8 @@ public class UserDB_1 {
         }
         PreparedStatement ps = null;
 
-        String query = "DELETE FROM User "
-                + "WHERE Email = ?";
+        String query = "DELETE FROM \"User\" "
+                + "WHERE \"Email\" = ?";
         try {
             ps = connection.prepareStatement(query);
             ps.setString(1, user.getEmail());
@@ -121,8 +121,8 @@ public class UserDB_1 {
         PreparedStatement ps = null;
         ResultSet rs = null;
 
-        String query = "SELECT * FROM User "
-                + "WHERE Email = ?";
+        String query = "SELECT * FROM \"User\" "
+                + "WHERE \"Email\" = ?";
         try {
             ps = connection.prepareStatement(query);
             ps.setString(1, email);
