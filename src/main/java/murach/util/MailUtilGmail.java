@@ -1,14 +1,11 @@
 package murach.util;
 
-import jakarta.mail.Address;
-import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
-import jakarta.mail.Session;
-import jakarta.mail.Transport;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
 
-import java.util.Properties;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 public class MailUtilGmail {
 
@@ -20,71 +17,93 @@ public class MailUtilGmail {
             boolean bodyIsHTML) throws MessagingException {
 
         long startTime = System.currentTimeMillis();
-        System.out.println("[EMAIL_DEBUG] START sendMail");
-        
+        System.out.println("[BREVO_API] START sendMail");
+
+        String apiKey = System.getenv("BREVO_API_KEY");
+        if (apiKey == null || apiKey.isEmpty()) {
+            throw new MessagingException("BREVO_API_KEY is not configured");
+        }
+
         try {
-        Properties props = new Properties();
+            // Escape strings for JSON
+            String safeTo = escapeJson(to);
+            String safeFrom = escapeJson(from);
+            String safeSubject = escapeJson(subject);
+            String safeBody = escapeJson(body);
 
-        props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.host", "smtp-relay.brevo.com");
-        props.put("mail.smtp.port", "587");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
+            String contentKey = bodyIsHTML ? "htmlContent" : "textContent";
 
-        Session session = Session.getInstance(props);
-        session.setDebug(true);
+            String jsonPayload = "{"
+                    + "\"sender\": {"
+                    + "\"name\": \"Email List\","
+                    + "\"email\": \"" + safeFrom + "\""
+                    + "},"
+                    + "\"to\": ["
+                    + "{"
+                    + "\"email\": \"" + safeTo + "\","
+                    + "\"name\": \"" + safeTo + "\""
+                    + "}"
+                    + "],"
+                    + "\"subject\": \"" + safeSubject + "\","
+                    + "\"" + contentKey + "\": \"" + safeBody + "\""
+                    + "}";
 
-        Message message = new MimeMessage(session);
+            System.out.println("[BREVO_API] API request started");
 
-        message.setSubject(subject);
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                    .header("api-key", apiKey)
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
+                    .build();
 
-        if (bodyIsHTML) {
-            message.setContent(body, "text/html");
-        } else {
-            message.setText(body);
-        }
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        Address fromAddress = new InternetAddress(from);
-        Address toAddress = new InternetAddress(to);
+            System.out.println("[BREVO_API] API response received, status=" + response.statusCode());
 
-        message.setFrom(fromAddress);
+            if (response.statusCode() == 201) {
+                String resBody = response.body();
+                String messageId = extractMessageId(resBody);
+                System.out.println("[BREVO_API] Email accepted by Brevo, messageId=" + messageId);
+            } else {
+                throw new MessagingException("Brevo API error: status=" + response.statusCode() + ", response=" + response.body());
+            }
 
-        message.setRecipient(
-                Message.RecipientType.TO,
-                toAddress
-        );
-
-        String username = System.getenv("BREVO_USERNAME");
-        String password = System.getenv("BREVO_SMTP_KEY");
-
-        System.out.println("[EMAIL_DEBUG] SMTP configuration loaded (host=" + props.getProperty("mail.smtp.host") + ", port=" + props.getProperty("mail.smtp.port") + ", username=" + username + ")");
-        System.out.println("BREVO_USERNAME = " + username);
-        System.out.println("BREVO_SMTP_KEY exists = " + (password != null));
-
-        Transport transport = session.getTransport();
-
-        transport.connect(
-                username,
-                password
-        );
-
-        System.out.println("=== SMTP AUTH SUCCESS ===");
-
-        long beforeTransport = System.currentTimeMillis();
-        System.out.println("[EMAIL_DEBUG] BEFORE Transport.send / sendMessage");
-        transport.sendMessage(
-                message,
-                message.getAllRecipients()
-        );
-        System.out.println("[EMAIL_DEBUG] AFTER Transport.send / sendMessage - elapsed=" + (System.currentTimeMillis() - beforeTransport) + " ms");
-
-        System.out.println("=== EMAIL SENT SUCCESSFULLY ===");
-
-        transport.close();
-        System.out.println("[EMAIL_DEBUG] END sendMail - total elapsed=" + (System.currentTimeMillis() - startTime) + " ms");
+            System.out.println("[BREVO_API] END sendMail, elapsed=" + (System.currentTimeMillis() - startTime) + " ms");
         } catch (MessagingException e) {
-            System.out.println("[EMAIL_DEBUG] ERROR sendMail: " + e.getMessage());
+            System.out.println("[BREVO_API] ERROR sendMail: " + e.getMessage());
             throw e;
+        } catch (Exception e) {
+            System.out.println("[BREVO_API] ERROR sendMail: " + e.getMessage());
+            throw new MessagingException("Failed to send email via Brevo REST API", e);
         }
+    }
+
+    private static String escapeJson(String str) {
+        if (str == null) return "";
+        return str.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\b", "\\b")
+                .replace("\f", "\\f")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
+    }
+
+    private static String extractMessageId(String json) {
+        if (json == null) return "";
+        int idx = json.indexOf("\"messageId\"");
+        if (idx != -1) {
+            int start = json.indexOf("\"", idx + 11);
+            if (start != -1) {
+                int end = json.indexOf("\"", start + 1);
+                if (end != -1) {
+                    return json.substring(start + 1, end);
+                }
+            }
+        }
+        return "unknown";
     }
 }
