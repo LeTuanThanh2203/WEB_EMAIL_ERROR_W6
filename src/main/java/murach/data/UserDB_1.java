@@ -9,6 +9,10 @@ public class UserDB_1 {
     public static int insert(User user) {
         ConnectionPool pool = ConnectionPool.getInstance();
         Connection connection = pool.getConnection();
+        if (connection == null) {
+            System.err.println("UserDB_1.insert: connection is null. Cannot proceed.");
+            return 0;
+        }
         PreparedStatement ps = null;
 
         String query
@@ -31,6 +35,10 @@ public class UserDB_1 {
     public static int update(User user) {
         ConnectionPool pool = ConnectionPool.getInstance();
         Connection connection = pool.getConnection();
+        if (connection == null) {
+            System.err.println("UserDB_1.update: connection is null. Cannot proceed.");
+            return 0;
+        }
         PreparedStatement ps = null;
 
         String query = "UPDATE User SET "
@@ -55,6 +63,10 @@ public class UserDB_1 {
     public static int delete(User user) {
         ConnectionPool pool = ConnectionPool.getInstance();
         Connection connection = pool.getConnection();
+        if (connection == null) {
+            System.err.println("UserDB_1.delete: connection is null. Cannot proceed.");
+            return 0;
+        }
         PreparedStatement ps = null;
 
         String query = "DELETE FROM User "
@@ -75,6 +87,10 @@ public class UserDB_1 {
     public static boolean emailExists(String email) {
         ConnectionPool pool = ConnectionPool.getInstance();
         Connection connection = pool.getConnection();
+        if (connection == null) {
+            System.err.println("UserDB_1.emailExists: connection is null. Cannot proceed.");
+            return false;
+        }
         PreparedStatement ps = null;
         ResultSet rs = null;
 
@@ -98,6 +114,10 @@ public class UserDB_1 {
     public static User selectUser(String email) {
         ConnectionPool pool = ConnectionPool.getInstance();
         Connection connection = pool.getConnection();
+        if (connection == null) {
+            System.err.println("UserDB_1.selectUser: connection is null. Cannot proceed.");
+            return null;
+        }
         PreparedStatement ps = null;
         ResultSet rs = null;
 
