@@ -21,13 +21,13 @@ public class MailUtilGmail {
 
         Properties props = new Properties();
 
-        props.put("mail.transport.protocol", "smtps");
-        props.put("mail.smtps.host", "smtp.gmail.com");
-        props.put("mail.smtps.port", "465");
-        props.put("mail.smtps.auth", "true");
-        props.put("mail.smtps.quitwait", "false");
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
 
-        Session session = Session.getDefaultInstance(props);
+        Session session = Session.getInstance(props);
         session.setDebug(true);
 
         Message message = new MimeMessage(session);
@@ -44,16 +44,20 @@ public class MailUtilGmail {
         Address toAddress = new InternetAddress(to);
 
         message.setFrom(fromAddress);
+
         message.setRecipient(
                 Message.RecipientType.TO,
                 toAddress
         );
 
+        String username = System.getenv("GMAIL_USERNAME");
+        String password = System.getenv("GMAIL_APP_PASSWORD");
+
         Transport transport = session.getTransport();
 
         transport.connect(
-                "tuanthanhlvq413@gmail.com",
-                "wwlladyleowixzel"
+                username,
+                password
         );
 
         transport.sendMessage(

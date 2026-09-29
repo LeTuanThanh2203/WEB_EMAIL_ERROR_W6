@@ -65,12 +65,12 @@
     </div>
 
     <div class="note-box animate-fadeIn delay-3">
-      To enter another survey, click on the Back button in your browser or the Return button shown below.
+      Click the button below to proceed to the SQL Gateway.
     </div>
 
     <div class="button-group animate-fadeIn delay-4">
-      <button class="btn" onclick="window.location.href='index.jsp'">
-        <span>Return</span>
+      <button class="btn" onclick="window.location.href='sql.jsp'">
+        <span>Continue to SQL Gateway</span>
         <svg class="btn-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <line x1="5" y1="12" x2="19" y2="12"></line>
           <polyline points="12 5 19 12 12 19"></polyline>

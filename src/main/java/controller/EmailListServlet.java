@@ -67,7 +67,7 @@ public class EmailListServlet extends HttpServlet {
 
                     MailUtilGmail.sendMail(
                             user.getEmail(),
-                            "yourgmail@gmail.com",
+                            System.getenv("GMAIL_USERNAME"),
                             "Welcome to our Email List",
                             "<h1>Welcome " + user.getFirstName() + "!</h1>"
                                     + "<p>Thank you for joining our email list.</p>"
