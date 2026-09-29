@@ -22,7 +22,7 @@ public class MailUtilGmail {
         Properties props = new Properties();
 
         props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.host", "smtp-relay.brevo.com");
         props.put("mail.smtp.port", "587");
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
@@ -50,8 +50,11 @@ public class MailUtilGmail {
                 toAddress
         );
 
-        String username = System.getenv("GMAIL_USERNAME");
-        String password = System.getenv("GMAIL_APP_PASSWORD");
+        String username = System.getenv("BREVO_USERNAME");
+        String password = System.getenv("BREVO_SMTP_KEY");
+
+        System.out.println("BREVO_USERNAME = " + username);
+        System.out.println("BREVO_SMTP_KEY exists = " + (password != null));
 
         Transport transport = session.getTransport();
 
@@ -60,10 +63,14 @@ public class MailUtilGmail {
                 password
         );
 
+        System.out.println("=== SMTP AUTH SUCCESS ===");
+
         transport.sendMessage(
                 message,
                 message.getAllRecipients()
         );
+
+        System.out.println("=== EMAIL SENT SUCCESSFULLY ===");
 
         transport.close();
     }

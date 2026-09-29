@@ -65,15 +65,15 @@ public class EmailListServlet extends HttpServlet {
                 // Send confirmation email
                 try {
 
+                    String fromEmail = System.getenv("SENDER_EMAIL");
+                    if (fromEmail == null || fromEmail.isEmpty()) {
+                        fromEmail = "tuanthanhlvq413@gmail.com"; // Email đã verify trên Brevo Senders
+                    }
                     MailUtilGmail.sendMail(
                             user.getEmail(),
-                            System.getenv("GMAIL_USERNAME"),
+                            fromEmail,
                             "Welcome to our Email List",
-                            "<h1>Welcome " + user.getFirstName() + "!</h1>"
-                                    + "<p>Thank you for joining our email list.</p>"
-                                    + "<p>Your email address is: "
-                                    + user.getEmail()
-                                    + "</p>",
+                            "<h1>Welcome " + user.getFirstName() + "!</h1>",
                             true
                     );
 
