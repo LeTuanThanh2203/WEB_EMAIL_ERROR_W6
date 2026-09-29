@@ -22,6 +22,7 @@ public class EmailListServlet extends HttpServlet {
                           HttpServletResponse response)
             throws ServletException, IOException {
 
+        System.out.println("[EMAIL_DEBUG] START REQUEST");
         String url = "/index.html";
         String message = "";
 
@@ -49,7 +50,10 @@ public class EmailListServlet extends HttpServlet {
             User user = new User(firstName, lastName, email);
 
             // Check if email already exists
-            if (UserDB_1.emailExists(user.getEmail())) {
+            System.out.println("[EMAIL_DEBUG] BEFORE emailExists");
+            boolean exists = UserDB_1.emailExists(user.getEmail());
+            System.out.println("[EMAIL_DEBUG] AFTER emailExists: " + exists);
+            if (exists) {
 
                 message = "This email address already exists.<br>"
                         + "Please enter another email address.";
@@ -60,7 +64,9 @@ public class EmailListServlet extends HttpServlet {
             else {
 
                 // Insert user into database
+                System.out.println("[EMAIL_DEBUG] BEFORE INSERT");
                 int rowAffected = UserDB_1.insert(user);
+                System.out.println("[EMAIL_DEBUG] AFTER INSERT: " + rowAffected);
 
                 if (rowAffected > 0) {
                     // Send confirmation email
@@ -70,6 +76,8 @@ public class EmailListServlet extends HttpServlet {
                         if (fromEmail == null || fromEmail.isEmpty()) {
                             fromEmail = "tuanthanhlvq413@gmail.com"; // Email đã verify trên Brevo Senders
                         }
+                        long beforeMail = System.currentTimeMillis();
+                        System.out.println("[EMAIL_DEBUG] BEFORE SEND MAIL");
                         MailUtilGmail.sendMail(
                                 user.getEmail(),
                                 fromEmail,
@@ -77,12 +85,13 @@ public class EmailListServlet extends HttpServlet {
                                 "<h1>Welcome " + user.getFirstName() + "!</h1>",
                                 true
                         );
+                        System.out.println("[EMAIL_DEBUG] AFTER SEND MAIL - elapsed=" + (System.currentTimeMillis() - beforeMail) + " ms");
 
                         message = "Registration successful. "
                                 + "A confirmation email has been sent.";
 
                     } catch (MessagingException e) {
-
+                        System.out.println("[EMAIL_DEBUG] ERROR: " + e.getMessage());
                         message = "Registration successful, "
                                 + "but the confirmation email could not be sent.";
 
@@ -100,6 +109,7 @@ public class EmailListServlet extends HttpServlet {
             request.setAttribute("message", message);
         }
 
+        System.out.println("[EMAIL_DEBUG] END REQUEST");
         getServletContext()
                 .getRequestDispatcher(url)
                 .forward(request, response);

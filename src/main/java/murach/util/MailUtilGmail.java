@@ -19,6 +19,10 @@ public class MailUtilGmail {
             String body,
             boolean bodyIsHTML) throws MessagingException {
 
+        long startTime = System.currentTimeMillis();
+        System.out.println("[EMAIL_DEBUG] START sendMail");
+        
+        try {
         Properties props = new Properties();
 
         props.put("mail.transport.protocol", "smtp");
@@ -53,6 +57,7 @@ public class MailUtilGmail {
         String username = System.getenv("BREVO_USERNAME");
         String password = System.getenv("BREVO_SMTP_KEY");
 
+        System.out.println("[EMAIL_DEBUG] SMTP configuration loaded (host=" + props.getProperty("mail.smtp.host") + ", port=" + props.getProperty("mail.smtp.port") + ", username=" + username + ")");
         System.out.println("BREVO_USERNAME = " + username);
         System.out.println("BREVO_SMTP_KEY exists = " + (password != null));
 
@@ -65,13 +70,21 @@ public class MailUtilGmail {
 
         System.out.println("=== SMTP AUTH SUCCESS ===");
 
+        long beforeTransport = System.currentTimeMillis();
+        System.out.println("[EMAIL_DEBUG] BEFORE Transport.send / sendMessage");
         transport.sendMessage(
                 message,
                 message.getAllRecipients()
         );
+        System.out.println("[EMAIL_DEBUG] AFTER Transport.send / sendMessage - elapsed=" + (System.currentTimeMillis() - beforeTransport) + " ms");
 
         System.out.println("=== EMAIL SENT SUCCESSFULLY ===");
 
         transport.close();
+        System.out.println("[EMAIL_DEBUG] END sendMail - total elapsed=" + (System.currentTimeMillis() - startTime) + " ms");
+        } catch (MessagingException e) {
+            System.out.println("[EMAIL_DEBUG] ERROR sendMail: " + e.getMessage());
+            throw e;
+        }
     }
 }
